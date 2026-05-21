@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Dairy Book — Simple cow milk tracking for dairy farmers." />
+  <meta name="theme-color" content="#166534">
+  <title>Dairy Book</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=5.13" />
+</head>
+
+<body>
+
+  <!-- ===== PAGES CONTAINER ===== -->
+  <div id="app">
+
+    <!-- ——— LOGIN ——— -->
+    <section class="page active" id="page-login">
+      <!-- Simulated OS/Email Push Notification -->
+      <div id="email-notification" class="otp-notification hidden" onclick="dismissNotification()">
+        <span class="otp-noti-icon">📨</span>
+        <div class="otp-noti-content">
+          <span class="otp-noti-sender">Auth Service &lt;auth@dairybook.com&gt;</span>
+          <span class="otp-noti-body">Your Dairy Book verification code is <strong
+              id="noti-otp-code">0000</strong>.</span>
+        </div>
+      </div>
+
+      <div class="login-container">
+        <div class="login-header animate-fade-in">
+          <span class="login-logo-emoji">🐄</span>
+          <h1 class="login-app-logo">Dairy Book</h1>
+          <span class="login-app-subtitle">Smart Dairy Management</span>
+        </div>
+
+        <div class="login-card animate-slide-up">
+          <!-- Step 1: Email Input Screen -->
+          <div id="login-step-email" class="login-step active">
+            <h2 class="login-title">Welcome Back</h2>
+            <p class="login-desc">Sign in to your organic dairy dashboard using your email address.</p>
+
+            <div class="form-group" style="margin-top: 24px;">
+              <label class="form-label" for="login-email">Email Address</label>
+              <div class="input-with-icon">
+                <span class="input-icon-span">✉️</span>
+                <input type="email" id="login-email" class="form-input" placeholder="e.g. farmer@organic.com"
+                  autocomplete="off" />
+              </div>
+              <span class="error-msg hidden" id="email-error">Please enter a valid email address</span>
+            </div>
+
+            <button class="action-full-btn blue-bg" id="btn-send-otp" onclick="sendOTP()"
+              style="margin-top: 24px; font-weight: 700;">
+              <span>Send Verification Code</span>
+            </button>
+          </div>
+
+          <!-- Step 2: OTP Verification Screen -->
+          <div id="login-step-otp" class="login-step">
+            <h2 class="login-title">Verify Code</h2>
+            <p class="login-desc">We've sent a 4-digit verification code to <strong
+                id="display-target-email">farmer@organic.com</strong></p>
+
+            <div class="otp-grid" style="margin-top: 32px; margin-bottom: 12px;">
+              <input type="text" id="otp-1" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+                oninput="otpInputHandler(this, 1)" onkeydown="otpKeyHandler(event, 1)" autocomplete="off" />
+              <input type="text" id="otp-2" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+                oninput="otpInputHandler(this, 2)" onkeydown="otpKeyHandler(event, 2)" autocomplete="off" />
+              <input type="text" id="otp-3" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+                oninput="otpInputHandler(this, 3)" onkeydown="otpKeyHandler(event, 3)" autocomplete="off" />
+              <input type="text" id="otp-4" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+                oninput="otpInputHandler(this, 4)" onkeydown="otpKeyHandler(event, 4)" autocomplete="off" />
+            </div>
+            <span class="error-msg hidden" id="otp-error" style="text-align: center; margin-top: 8px;">Invalid
+              verification code, please try again</span>
+
+            <button class="action-full-btn green-bg" id="btn-verify-otp" onclick="verifyOTP()"
+              style="margin-top: 24px; font-weight: 700;">
+              <span>Verify & Unlock</span>
+            </button>
+
+            <button class="text-link-btn" onclick="backToEmail()"
+              style="margin-top: 16px; width: 100%; text-align: center; background: none; border: none; color: var(--text-light); font-weight: 600; font-size: 0.85rem; cursor: pointer;">
+              ← Back to Email
+            </button>
+          </div>
+        </div>
+
+        <!-- Footer showing session opening time -->
+        <div class="login-footer animate-fade-in">
+          <span id="session-open-time">🕒 Session opened: May 21, 2026, 12:51:28 AM</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ——— HOME ——— -->
+    <section class="page" id="page-home">
+      <div class="page-header">
+        <div>
+          <h1 class="app-logo">Dairy Book</h1>
+          <span class="app-subtitle">Smart Dairy Management</span>
+        </div>
+        <div class="header-controls">
+          <div class="global-unit-toggle">
+            <button class="unit-toggle-btn active" id="global-unit-l" onclick="setGlobalUnit('L')">L</button>
+            <button class="unit-toggle-btn" id="global-unit-kg" onclick="setGlobalUnit('kg')">kg</button>
+          </div>
+          <span class="today-badge" id="header-date"></span>
+          <button class="logout-btn" onclick="logout()" title="Logout" aria-label="Logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+              class="logout-icon">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 Stat Boxes -->
+      <div class="stats-grid-4">
+        <div class="stat-box-v">
+          <span class="stat-icon green-bg-light">🐄</span>
+          <span class="stat-num" id="stat-total-cows">0</span>
+          <span class="stat-label">CATTLES</span>
+          <span class="stat-sub green">Active</span>
+        </div>
+        <div class="stat-box-v">
+          <span class="stat-icon blue-bg-light">🥛</span>
+          <span class="stat-num" id="stat-today-milk">0.0</span>
+          <span class="stat-label">LITRES TODAY</span>
+          <span class="stat-sub" id="stat-milk-change"></span>
+        </div>
+        <div class="stat-box-v">
+          <span class="stat-icon orange-bg-light">📋</span>
+          <span class="stat-num" id="stat-today-entries">0</span>
+          <span class="stat-label">ENTRIES</span>
+          <span class="stat-sub">Today</span>
+        </div>
+        <div class="stat-box-v">
+          <span class="stat-icon purple-bg-light">💉</span>
+          <span class="stat-num" id="stat-vaccine-due">0</span>
+          <span class="stat-label">VACCINES</span>
+          <span class="stat-sub orange" id="stat-vaccine-sub">Due</span>
+        </div>
+      </div>
+
+
+      <!-- Chart Row: Milk Production + Herd Health -->
+      <div class="chart-row">
+        <!-- 7-Day Milk Production Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <span class="chart-title">Milk Production</span>
+            <span class="chart-badge">Weekly</span>
+          </div>
+          <div class="chart-stats">
+            <div>
+              <span class="chart-stat-num" id="chart-today-val">0.0</span><span class="chart-stat-unit">L</span>
+              <div class="chart-stat-label">Today</div>
+            </div>
+            <div>
+              <span class="chart-stat-num" id="chart-yesterday-val">0.0</span><span class="chart-stat-unit">L</span>
+              <div class="chart-stat-label">Yesterday</div>
+            </div>
+            <div>
+              <span class="chart-stat-num" id="chart-growth" class="green">—</span>
+              <div class="chart-stat-label">Growth</div>
+            </div>
+          </div>
+          <canvas id="milk-chart" width="340" height="140"></canvas>
+        </div>
+
+
+      </div>
+
+      <!-- Farm Alerts & Reminders -->
+      <h3 class="section-title" style="margin-top:20px;">🚨 Farm Alerts & Reminders</h3>
+      <div id="home-alerts-list" class="home-alerts-list" style="margin-bottom: 20px;">
+        <!-- Filled dynamically by app.js -->
+      </div>
+
+      <!-- Quick Actions (horizontal) -->
+      <h3 class="section-title">Quick Actions</h3>
+      <div class="quick-actions">
+        <button class="quick-btn green-bg-light" onclick="navigateTo('page-register')">
+          <span class="quick-icon">➕</span>
+          <span class="quick-label">Register Cow</span>
+        </button>
+        <button class="quick-btn green-bg-light" onclick="navigateTo('page-herd')">
+          <span class="quick-icon">🐮</span>
+          <span class="quick-label">My Herd</span>
+        </button>
+        <button class="quick-btn blue-bg-light" onclick="navigateTo('page-scan')">
+          <span class="quick-icon">🥛</span>
+          <span class="quick-label">Milk Entry</span>
+        </button>
+        <button class="quick-btn orange-bg-light" onclick="navigateTo('page-feed')">
+          <span class="quick-icon">🌾</span>
+          <span class="quick-label">Feed Log</span>
+        </button>
+        <button class="quick-btn purple-bg-light" onclick="navigateTo('page-health')">
+          <span class="quick-icon">🏥</span>
+          <span class="quick-label">Health Log</span>
+        </button>
+        <button class="quick-btn gray-bg-light" onclick="navigateTo('page-report')">
+          <span class="quick-icon">📊</span>
+          <span class="quick-label">Reports</span>
+        </button>
+
+      </div>
+    </section>
+
+    <!-- ——— VACCINE MANAGEMENT ——— -->
+    <section class="page" id="page-vaccine">
+      <div class="page-header">
+        <button class="back-btn" onclick="navigateTo('page-home')">‹</button>
+        <h2>Vaccine Schedule</h2>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Add Vaccine Reminder</h3>
+        <div class="form-group">
+          <label class="form-label">Select Cow</label>
+          <select id="vaccine-cow-select" class="form-select">
+            <option value="" disabled selected>Choose...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vaccine Name</label>
+          <input type="text" id="vaccine-name-input" class="form-input" placeholder="e.g. FMD, HS, BQ..."
+            autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" id="vaccine-date-input" class="form-input" />
+        </div>
+        <button class="action-full-btn green-bg" onclick="addVaccine()">💉 Add Vaccine</button>
+      </div>
+      <div class="feedback hidden" id="vaccine-feedback"></div>
+
+      <h3 class="section-title" style="margin-top:20px;">Upcoming Vaccines</h3>
+      <div id="vaccine-list" class="vaccine-list"></div>
+    </section>
+
+    <!-- ——— REGISTER COW ——— -->
+    <section class="page" id="page-register">
+      <div class="page-header">
+        <button class="back-btn" onclick="navigateTo('page-home')">‹</button>
+        <h2>Register Cow</h2>
+      </div>
+
+      <div class="card">
+        <div class="scan-section">
+          <button class="scan-big-btn" id="btn-start-register-scan" onclick="startRegisterScan()">
+            <span class="scan-big-icon">📷</span>
+            <span>Scan Ear-Tag QR</span>
+          </button>
+          <span style="display:block;margin-top:10px;font-size:0.75rem;color:var(--text-light);font-weight:600;">📷 Hold
+            camera close to the cow's tag to scan automatically</span>
+          <div id="register-reader" class="reader-box"></div>
+        </div>
+
+        <div class="or-divider"><span>OR TYPE BELOW</span></div>
+
+        <div class="form-group">
+          <label class="form-label">Ear-Tag Number *</label>
+          <input type="text" id="register-tag-input" class="form-input" placeholder="e.g. IN-1234" maxlength="20"
+            autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Cow Name</label>
+          <input type="text" id="register-name-input" class="form-input" placeholder="e.g. Lakshmi" maxlength="30"
+            autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Breed Type *</label>
+          <select id="register-breed-input" class="form-select">
+            <option value="" disabled selected>Select breed...</option>
+            <option value="Gir">🐄 Gir</option>
+            <option value="Sahiwal">🐄 Sahiwal</option>
+            <option value="Red Sindhi">🐄 Red Sindhi</option>
+            <option value="Tharparkar">🐄 Tharparkar</option>
+            <option value="Rathi">🐄 Rathi</option>
+            <option value="Kankrej">🐄 Kankrej</option>
+            <option value="Hariana">🐄 Hariana</option>
+            <option value="Ongole">🐄 Ongole</option>
+            <option value="Murrah (Buffalo)">🐃 Murrah (Buffalo)</option>
+            <option value="Mehsana (Buffalo)">🐃 Mehsana (Buffalo)</option>
+            <option value="Jaffarabadi (Buffalo)">🐃 Jaffarabadi (Buffalo)</option>
+            <option value="Nili-Ravi (Buffalo)">🐃 Nili-Ravi (Buffalo)</option>
+            <option value="HF">🐄 HF</option>
+            <option value="Jersey">🐄 Jersey</option>
+            <option value="HF Cross">🐄 HF Cross</option>
+            <option value="Jersey Cross">🐄 Jersey Cross</option>
+            <option value="Other">🐄 Other</option>
+          </select>
+        </div>
+
+        <button class="action-full-btn green-bg" id="btn-save-cow" onclick="registerCow()">✓ Register Cow</button>
+      </div>
+
+      <div class="feedback hidden" id="register-feedback"></div>
+    </section>
+
+    <!-- ——— MILK ENTRY ——— -->
+    <section class="page" id="page-scan">
+      <div class="page-header">
+        <button class="back-btn" onclick="navigateTo('page-home')">‹</button>
+        <h2>Milk Entry</h2>
+        <button class="unit-toggle-single-btn" id="milk-unit-toggle-btn" onclick="toggleGlobalUnitSystem()"></button>
+      </div>
+
+      <!-- Today's Total Milk Summary Box -->
+      <div class="stats-row" style="margin-bottom: 18px;">
+        <div class="stat-box"
+          style="background: linear-gradient(135deg, var(--primary-light) 0%, rgba(255, 255, 255, 0.95) 100%); border: 1px solid var(--primary-light); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px;">
+          <span class="stat-num green" id="milk-today-total"
+            style="font-size: 2rem; font-weight: 800; line-height: 1.2;">0.0 Litres</span>
+          <span class="stat-label"
+            style="font-size: 0.85rem; font-weight: 700; color: var(--text-mid); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
+            Today's Total Milk</span>
+          <span id="milk-today-sessions"
+            style="font-size: 0.75rem; color: var(--text-light); margin-top: 6px; font-weight: 600;">Morning: 0.0L ·
+            Evening: 0.0L</span>
+          <span id="milk-today-active-cows"
+            style="font-size: 0.75rem; color: var(--text-light); margin-top: 2px; font-weight: 500; font-style: italic;">0
+            cows recorded</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="scan-section">
+          <button class="scan-big-btn" id="btn-start-milk-scan" onclick="startMilkScan()">
+            <span class="scan-big-icon">📷</span>
+            <span>Scan Ear-Tag</span>
+          </button>
+          <span style="display:block;margin-top:10px;font-size:0.75rem;color:var(--text-light);font-weight:600;">📷 Hold
+            camera close to the cow's tag to scan automatically</span>
+          <div id="milk-reader" class="reader-box"></div>
+        </div>
+
+        <div class="or-divider"><span>OR SEARCH / SELECT BELOW</span></div>
+
+        <div class="form-group">
+          <label class="form-label">Search by Tag or Name</label>
+          <input type="text" id="milk-search-input" class="form-input" placeholder="Type tag or cow name..."
+            autocomplete="off" oninput="filterCowList()" />
+        </div>
+      </div>
+
+      <!-- Cow selection list -->
+      <div id="cow-select-list" class="cow-select-list"></div>
+
+      <!-- Slider section (hidden until cow found) -->
+      <div class="card hidden" id="milk-slider-card">
+        <!-- Cow info badge -->
+        <div class="cow-info-badge">
+          <span class="cow-info-icon">🐄</span>
+          <div>
+            <div class="cow-info-tag" id="found-cow-tag"></div>
+            <div class="cow-info-name" id="found-cow-name"></div>
+          </div>
+        </div>
+
+        <!-- Morning / Evening toggle -->
+        <div class="session-pills">
+          <button class="pill active" data-session="morning" onclick="setSession('morning')">🌅 Morning</button>
+          <button class="pill" data-session="evening" onclick="setSession('evening')">🌇 Evening</button>
+        </div>
+
+        <!-- Unit selector for this entry -->
+        <div style="text-align: center; margin-bottom: 20px;">
+          <span
+            style="font-size: 0.7rem; font-weight: 800; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 6px;">Unit
+            of Measurement</span>
+          <div class="session-pills" style="margin-bottom: 0;">
+            <button class="pill active" id="entry-unit-l" onclick="setEntryUnit('L')">🥛 Litres (L)</button>
+            <button class="pill" id="entry-unit-kg" onclick="setEntryUnit('kg')">⚖️ Kilograms (kg)</button>
+          </div>
+        </div>
+
+        <!-- Big slider -->
+        <div class="slider-area">
+          <div class="slider-display">
+            <span class="slider-big-num" id="milk-value">0.0</span>
+            <span class="slider-big-unit">Litres</span>
+          </div>
+          <input type="range" id="milk-slider" class="fat-slider" min="0" max="200" value="0" step="1"
+            oninput="updateSliderValue(this.value)" />
+          <div class="slider-ticks">
+            <span>0</span><span>5</span><span>10</span><span>15</span><span>20</span>
+          </div>
+        </div>
+
+        <button class="action-full-btn green-bg" id="btn-save-milk" onclick="saveMilkEntry()">💾 Save Entry</button>
+      </div>
+
+      <div class="feedback hidden" id="milk-feedback"></div>
+    </section>
+
+    <!-- ——— FEED MANAGEMENT ——— -->
+    <section class="page" id="page-feed">
+      <div class="page-header">
+        <button class="back-btn" onclick="navigateTo('page-home')">‹</button>
+        <h2>Feed Management</h2>
+      </div>
+
+      <!-- Feed Analytics Dashboard -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="stat-num blue" id="feed-stat-consumed">0.0</span>
+          <span class="stat-label">Total kg (Today)</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num orange" id="feed-stat-cost">₹0</span>
+          <span class="stat-label">Feed Cost (Today)</span>
+        </div>
+      </div>
+
+      <!-- Feed Stock / Inventory Levels -->
+      <div class="card">
+        <div class="card-header-row">
+          <h3 class="card-title">🌾 Feed Stock Inventory</h3>
+          <span class="chart-badge font-700" style="background:var(--orange-light);color:var(--orange)"
+            id="feed-stock-badge">Stock Ok</span>
+        </div>
+        <div class="stock-list" id="feed-stock-levels">
+          <!-- Feed stock rows populated dynamically -->
+        </div>
+        <button class="add-feed-btn" onclick="showAddFeedPrompt()">＋ Add New Feed</button>
+      </div>
+
+      <!-- Feed History Timeline -->
+      <h3 class="section-title">Feed Consumption Timeline</h3>
+      <div id="feed-history-list" class="feed-history-list"></div>
+
+    </section>
+
+    <!-- ——— MEDICATION & HEALTH ——— -->
+    <section class="page" id="page-health">
+      <div class="page-header">
+        <button class="back-btn" onclick="navigateTo('page-home')">‹</button>
+        <h2>Health & Medication</h2>
+      </div>
+
+      <!-- Unified Real-time Health Alerts -->
+      <div class="health-alerts-card hidden" id="health-alerts-card">
+        <h3 class="card-title" style="color:var(--red);">🚨 Health & Production Alerts</h3>
+        <div id="health-alerts-list" class="health-alerts-list">
+          <!-- Filled dynamically -->
+        </div>
+      </div>
+
+      <!-- Medical Timeline History -->
+      <h3 class="section-title">Medical History Timeline</h3>
+      <div id="health-history-list" class="health-history-list"></div>
+
+    </section>
+
+    <!-- ——— REPORTS ——— -->
+    <section class="page" id="page-report">
+      <div class="page-header">
+        <button class="back-btn" onclick="navigateTo('page-home')">‹</button>
+        <h2>Reports</h2>
+        <input type="date" id="report-selected-date" class="report-date-header-input" onchange="onReportDateChange()" />
+      </div>
+
+      <!-- Period toggle: Daily / Weekly / Monthly -->
+      <div class="report-tabs">
+        <button class="report-tab active" data-period="daily" onclick="switchReportPeriod('daily')">📅 Daily</button>
+        <button class="report-tab" data-period="weekly" onclick="switchReportPeriod('weekly')">📆 Weekly</button>
+        <button class="report-tab" data-period="monthly" onclick="switchReportPeriod('monthly')">🗓️ Monthly</button>
+      </div>
+
+      <p class="date-range" id="report-date-range"></p>
+
+      <!-- Summary boxes -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="stat-num blue" id="rpt-total-milk">0</span>
+          <span class="stat-label">Total Litres</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num" id="rpt-avg-milk">0</span>
+          <span class="stat-label" id="rpt-avg-label">Avg/Cow</span>
+        </div>
+        <div class="stat-box highlight">
+          <span class="stat-num orange" id="rpt-best-cow">—</span>
+          <span class="stat-label">🏆 Best</span>
+        </div>
+      </div>
+
+      <!-- Performance table -->
+      <div class="card">
+        <h3 class="card-title" id="rpt-table-title">Cow Performance</h3>
+        <div class="table-wrap">
+          <table id="report-table">
+            <thead>
+              <tr>
+                <th>Tag</th>
+                <th>Name</th>
+                <th id="rpt-col-total">Total</th>
+                <th id="rpt-col-detail">Morning</th>
+                <th id="rpt-col-extra">Evening</th>
+              </tr>
+            </thead>
+            <tbody id="report-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="card" id="alerts-card">
+        <h3 class="card-title">⚠️ Alerts & Insights</h3>
+        <ul class="alerts-list" id="alerts-list"></ul>
+      </div>
+    </section>
+
+    <!-- ——— MY HERD ——— -->
+    <section class="page" id="page-herd">
+      <div class="page-header">
+        <button class="back-btn" onclick="navigateTo('page-home')">‹</button>
+        <h2>My Herd</h2>
+      </div>
+      <p class="sub-text" id="herd-count-desc">0 cows registered</p>
+      <div id="herd-list" class="herd-list"></div>
+    </section>
+
+  </div>
+
+  <!-- Bottom tab bar -->
+  <nav id="tab-bar">
+    <button class="tab active" data-page="page-home" onclick="navigateTo('page-home')">
+      <span class="tab-icon">🏠</span><span class="tab-text">Home</span>
+    </button>
+    <button class="tab" data-page="page-scan" onclick="navigateTo('page-scan')">
+      <span class="tab-icon">🥛</span><span class="tab-text">Milk</span>
+    </button>
+    <button class="tab" data-page="page-feed" onclick="navigateTo('page-feed')">
+      <span class="tab-icon">🌾</span><span class="tab-text">Feed</span>
+    </button>
+    <button class="tab" data-page="page-health" onclick="navigateTo('page-health')">
+      <span class="tab-icon">🏥</span><span class="tab-text">Health</span>
+    </button>
+    <button class="tab" data-page="page-report" onclick="navigateTo('page-report')">
+      <span class="tab-icon">📊</span><span class="tab-text">Report</span>
+    </button>
+  </nav>
+
+  <!-- Modals moved to root body to avoid transform container context issues -->
+  <!-- Feed Modal Pop-up -->
+  <div class="modal-overlay hidden" id="feed-modal" onclick="if(event.target === this) toggleFeedModal(false)">
+    <div class="modal-content card">
+      <button class="modal-close-btn" onclick="toggleFeedModal(false)" title="Close">✕</button>
+      <h3 class="card-title" style="margin-top: 8px;">🌾 Log Feed Intake</h3>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Select Cow *</label>
+          <select id="feed-cow-select" class="form-select">
+            <option value="" disabled selected>Choose...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Feed Type *</label>
+          <select id="feed-type-select" class="form-select">
+            <option value="" disabled selected>Choose...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Date *</label>
+        <input type="date" id="feed-date-input" class="form-input" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Quantity (kg) *</label>
+        <div class="qty-input-wrapper">
+          <button class="qty-control-btn" type="button" onclick="adjustFeedQty(-1.0)">-1 kg</button>
+          <button class="qty-control-btn" type="button" onclick="adjustFeedQty(-0.1)">-0.1</button>
+          <input type="number" id="feed-qty-input" class="form-input text-center" placeholder="0.0" step="0.1" min="0.1"
+            style="text-align:center;" />
+          <button class="qty-control-btn" type="button" onclick="adjustFeedQty(0.1)">+0.1</button>
+          <button class="qty-control-btn" type="button" onclick="adjustFeedQty(1.0)">+1 kg</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Total Cost (₹)</label>
+        <input type="number" id="feed-cost-input" class="form-input" placeholder="e.g. 150" min="0" step="1" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Feed Session</label>
+        <div class="session-pills" style="margin-bottom:0px;">
+          <button class="pill active" id="feed-pill-morning" data-session="morning"
+            onclick="setFeedSession('morning')">🌅 Morning</button>
+          <button class="pill" id="feed-pill-evening" data-session="evening" onclick="setFeedSession('evening')">🌇
+            Evening</button>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:14px;">
+        <label class="form-label">Special Notes</label>
+        <input type="text" id="feed-notes-input" class="form-input" placeholder="e.g. digestives added, low intake"
+          autocomplete="off" />
+      </div>
+
+      <button class="action-full-btn green-bg" onclick="saveFeedEntry()">🌾 Save Feed Entry</button>
+      <div class="feedback hidden" id="feed-feedback" style="margin-top: 12px;"></div>
+    </div>
+  </div>
+  <!-- Add New Feed Modal -->
+  <div class="modal-overlay hidden" id="add-feed-modal" onclick="if(event.target === this) toggleAddFeedModal(false)">
+    <div class="modal-content card">
+      <button class="modal-close-btn" onclick="toggleAddFeedModal(false)" title="Close">✕</button>
+      <h3 class="card-title" style="margin-top: 12px;">➕ Add Custom Feed</h3>
+
+      <div class="form-group">
+        <label class="form-label">Feed Name *</label>
+        <input type="text" id="add-feed-name" class="form-input" placeholder="e.g. Mustard Khali" autocomplete="off" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Max Storage Capacity (kg) *</label>
+        <input type="number" id="add-feed-max" class="form-input" placeholder="e.g. 500" min="1" step="1" />
+      </div>
+
+      <button class="action-full-btn green-bg" onclick="confirmAddFeed()" style="margin-top: 12px;">Add Feed to
+        Inventory</button>
+      <div class="feedback hidden" id="add-feed-feedback" style="margin-top: 12px;"></div>
+    </div>
+  </div>
+
+  <!-- Refill Feed Stock Modal -->
+  <div class="modal-overlay hidden" id="refill-feed-modal" onclick="if(event.target === this) toggleRefillModal(false)">
+    <div class="modal-content card">
+      <button class="modal-close-btn" onclick="toggleRefillModal(false)" title="Close">✕</button>
+      <h3 class="card-title" style="margin-top: 8px;" id="refill-modal-title">📦 Refill Feed</h3>
+
+      <div class="form-group">
+        <label class="form-label">Quantity to Add (kg) *</label>
+        <input type="number" id="refill-feed-qty" class="form-input" placeholder="0" min="0.1" step="0.1" />
+        <span class="stat-sub" style="margin-top: 4px; display:block;" id="refill-modal-max-label"></span>
+      </div>
+
+      <button class="action-full-btn blue-bg" onclick="confirmRefillStock()" style="margin-top: 12px;">Save
+        Refill</button>
+      <div class="feedback hidden" id="refill-feed-feedback" style="margin-top: 12px;"></div>
+    </div>
+  </div>
+  <!-- Health Modal Pop-up -->
+  <div class="modal-overlay hidden" id="health-modal" onclick="if(event.target === this) toggleHealthModal(false)">
+    <div class="modal-content card">
+      <button class="modal-close-btn" onclick="toggleHealthModal(false)" title="Close">✕</button>
+      <h3 class="card-title" style="margin-top: 8px;">🏥 Log Medical / Health Event</h3>
+
+      <div class="form-group">
+        <label class="form-label">Select Cow *</label>
+        <select id="health-cow-select" class="form-select">
+          <option value="" disabled selected>Choose...</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Record Type *</label>
+        <div class="session-pills" style="margin-bottom:0px;">
+          <button class="pill active" id="health-pill-treatment" onclick="setHealthRecordType('treatment')">💊
+            Treatment</button>
+          <button class="pill" id="health-pill-vaccination" onclick="setHealthRecordType('vaccination')">💉
+            Vaccine</button>
+          <button class="pill" id="health-pill-checkup" onclick="setHealthRecordType('checkup')">🌡️
+            Checkup</button>
+        </div>
+      </div>
+
+      <div class="form-row-2" style="margin-top:14px;">
+        <div class="form-group" id="group-medicine">
+          <label class="form-label" id="label-medicine">Medicine Name *</label>
+          <input type="text" id="health-medicine-input" class="form-input"
+            placeholder="e.g. Meloxicam, Dewormer syrup..." />
+        </div>
+
+        <div class="form-group" id="group-dose">
+          <label class="form-label">Dose / Quantity</label>
+          <input type="text" id="health-dose-input" class="form-input" placeholder="e.g. 10 ml, 2 pills, 1 dose..." />
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Vet / Doctor Name</label>
+          <input type="text" id="health-vet-input" class="form-input" placeholder="e.g. Dr. Sandeep Sharma" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Reason / Symptoms *</label>
+          <input type="text" id="health-reason-input" class="form-input"
+            placeholder="e.g. High fever, mastitis check, routine deworming" />
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Temperature (°F)</label>
+          <input type="number" id="health-temp-input" class="form-input" placeholder="e.g. 101.5" step="0.1" min="95"
+            max="110" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Health Status</label>
+          <select id="health-status-select" class="form-select">
+            <option value="Healthy">🟢 Healthy</option>
+            <option value="Sick">🔴 Sick / Feverish</option>
+            <option value="Observation" selected>🟡 Under Observation</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" id="group-due-date">
+        <label class="form-label">Next Due Date (Reminders)</label>
+        <input type="date" id="health-due-date-input" class="form-input" />
+      </div>
+
+      <button class="action-full-btn blue-bg" onclick="saveHealthEntry()">✓ Save Health Entry</button>
+      <div class="feedback hidden" id="health-feedback" style="margin-top: 12px;"></div>
+    </div>
+  </div>
+
+  <!-- Floating Action Buttons moved to root body to avoid transform container context issues -->
+  <div id="fab-container" class="fab-container">
+    <button id="feed-fab" class="fab-btn green-fab" onclick="toggleFeedModal(true)" title="Log Feed Intake"
+      style="display: none;">
+      <span class="fab-icon">🌾</span>
+    </button>
+    <button id="health-fab" class="fab-btn blue-fab" onclick="toggleHealthModal(true)" title="Log Health Event"
+      style="display: none;">
+      <span class="fab-icon">🏥</span>
+    </button>
+  </div>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="app.js?v=5.13"></script>
+</body>
+
+</html>
