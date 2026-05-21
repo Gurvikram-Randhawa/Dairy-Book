@@ -2452,31 +2452,35 @@ function sendOTP() {
     document.head.appendChild(style);
   }
 
-  setTimeout(() => {
-    currentOTP = Math.floor(1000 + Math.random() * 9000).toString();
-    console.log("Simulated OTP sent to", emailVal, ":", currentOTP);
+  currentOTP = Math.floor(1000 + Math.random() * 9000).toString();
 
-    document.getElementById('display-target-email').textContent = emailVal;
-    document.getElementById('login-step-email').classList.remove('active');
-    document.getElementById('login-step-otp').classList.add('active');
+  emailjs.send('service_xo21cjk', 'template_nnu75te', {
+    to_email: emailVal,
+    otp_code: currentOTP
+  }, 'LqutLeFM-3g67xfGi')
+    .then(() => {
+      document.getElementById('display-target-email').textContent = emailVal;
+      document.getElementById('login-step-email').classList.remove('active');
+      document.getElementById('login-step-otp').classList.add('active');
 
-    showOTPNotification(currentOTP);
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = `<span>Send Verification Code</span>`;
 
-    sendBtn.disabled = false;
-    sendBtn.innerHTML = `<span>Send Verification Code</span>`;
-
-    for (let i = 1; i <= 4; i++) {
-      const el = document.getElementById(`otp-${i}`);
-      if (el) {
-        el.value = '';
-        el.className = 'otp-input';
+      for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById(`otp-${i}`);
+        if (el) { el.value = ''; el.className = 'otp-input'; }
       }
-    }
-    setTimeout(() => {
-      const firstOtp = document.getElementById('otp-1');
-      if (firstOtp) firstOtp.focus();
-    }, 100);
-  }, 1200);
+      setTimeout(() => {
+        const firstOtp = document.getElementById('otp-1');
+        if (firstOtp) firstOtp.focus();
+      }, 100);
+    })
+    .catch((error) => {
+      console.error('EmailJS error:', error);
+      showFeedback('login-feedback', '❌ Failed to send email. Please try again.', 'error');
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = `<span>Send Verification Code</span>`;
+    });
 }
 
 function showOTPNotification(code) {
